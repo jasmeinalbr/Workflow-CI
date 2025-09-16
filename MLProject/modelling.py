@@ -83,7 +83,7 @@ for model_name, (estimator, param_grid) in models.items():
         mlflow.log_artifact(report_path, artifact_path="reports")
 
         # --- Save best model ---
-        mlflow.sklearn.log_model(best_model, artifact_path=f"models/{model_name}")
+        mlflow.sklearn.log_model(best_model, artifact_path="model")
 
         # --- Save grid search results ---
         cv_results_serializable = {
