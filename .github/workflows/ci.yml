@@ -1,0 +1,39 @@
+name: MLflow CI Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12.7"
+
+    - name: Install dependencies
+      run: |
+        pip install mlflow scikit-learn pandas numpy dagshub
+
+    - name: Set MLflow Tracking URI
+      run: |
+        echo "MLFLOW_TRACKING_URI=https://dagshub.com/${{ github.repository }}.mlflow" >> $GITHUB_ENV
+        echo "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" >> $GITHUB_ENV
+        echo "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" >> $GITHUB_ENV
+
+    - name: Run mlflow project
+      run: mlflow run MLProject -P data_path=namadataset_preprocessing
+
+    - name: Upload to GitHub
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-artifacts
+        path: mlruns/
