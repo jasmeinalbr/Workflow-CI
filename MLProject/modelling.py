@@ -28,7 +28,7 @@ y_test = pd.read_csv(f"{args.data_path}/y_test.csv").values.ravel()
 
 # --- Set local MLflow experiment ---
 # mlflow.set_tracking_uri("file:./mlruns")
-mlflow.set_experiment("Workflow_CI")
+# mlflow.set_experiment("Workflow_CI")
 
 # --- Candidate models + hyperparameter grids ---
 models = {
