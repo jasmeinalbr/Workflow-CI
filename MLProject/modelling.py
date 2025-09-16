@@ -1,6 +1,7 @@
 import os
 import argparse
 import pandas as pd
+import numpy as np 
 import mlflow
 import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
@@ -26,10 +27,6 @@ X_test = pd.read_csv(f"{args.data_path}/test_processed.csv")
 y_train = pd.read_csv(f"{args.data_path}/y_train.csv").values.ravel()
 y_test = pd.read_csv(f"{args.data_path}/y_test.csv").values.ravel()
 
-# --- Set local MLflow experiment ---
-# mlflow.set_tracking_uri("file:./mlruns")
-# mlflow.set_experiment("Workflow_CI")
-
 # --- Candidate models + hyperparameter grids ---
 models = {
     "LogisticRegression": (
@@ -42,8 +39,6 @@ models = {
     )
 }
 
-# with mlflow.start_run(run_name="parent_run"):
-#     with mlflow.start_run(run_name="all_models", nested=True):
 # --- Run experiments ---
 for model_name, (estimator, param_grid) in models.items():
             grid = GridSearchCV(estimator, param_grid, cv=3, scoring="accuracy", n_jobs=-1)
@@ -90,9 +85,14 @@ for model_name, (estimator, param_grid) in models.items():
             mlflow.sklearn.log_model(best_model, artifact_path=f"models/{model_name}")
 
             # --- Save grid search results ---
+            # Convert all ndarray in cv_results_ to list for JSON serialization
+            cv_results_serializable = {
+                k: v.tolist() if isinstance(v, np.ndarray) else v
+                for k, v in grid.cv_results_.items()
+            }
             results_path = os.path.join(tmpdir, f"grid_results_{model_name}.json")
             with open(results_path, "w") as f:
-                json.dump(grid.cv_results_, f, indent=4)
+                json.dump(cv_results_serializable, f, indent=4)
             mlflow.log_artifact(results_path, artifact_path="grid_search")
 
             print(f"✅ {model_name} Best Accuracy: {acc:.4f}, Best Params: {grid.best_params_}")
