@@ -2,9 +2,13 @@ name: workflow-ci-env
 dependencies:
   - python=3.12.7
   - scikit-learn
-  - mlflow==2.19.0
   - pandas
   - numpy
+  - matplotlib
+  - seaborn
   - pip
   - pip:
+      - mlflow==2.19.0
       - dagshub
+      - joblib
+      - cloudpickle
