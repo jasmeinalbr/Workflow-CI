@@ -33,18 +33,13 @@ jobs:
           echo "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Run MLflow project
-        run: mlflow run MLProject -P data_path=dataset_preprocessing
-
-      - name: Get latest run_id
-        id: get_run
-        run: |
-          RUN_ID=$(mlflow runs list -n 1 --experiment-name "Workflow_CI_Experiment" --output json | jq -r '.[0].run_id')
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+        run: mlflow run MLProject -P data_path=MLProject/dataset_preprocessing
 
       - name: Collect artifacts
         run: |
           mkdir -p artifacts
-          cp -r mlruns/0/${{ steps.get_run.outputs.run_id }}/artifacts/* artifacts/ || true
+          # copy semua artifacts dari mlruns (run terakhir)
+          cp -r mlruns/*/*/artifacts/* artifacts/ || true
 
       - name: Upload to GitHub
         uses: actions/upload-artifact@v3
@@ -59,9 +54,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Model
-        run: mlflow models build-docker -m "mlruns/0/${{ steps.get_run.outputs.run_id }}/artifacts/model" -n mlflow-model:latest
+        run: |
+          # ambil model terakhir yang dilog MLflow
+          MODEL_PATH=$(find mlruns -type d -path "*/artifacts/model" | head -n 1)
+          echo "Found model at $MODEL_PATH"
+          mlflow models build-docker -m "$MODEL_PATH" -n mlflow-model
 
       - name: Push Docker Image
         run: |
-          docker tag mlflow-model:latest ${{ secrets.DOCKER_USERNAME }}/mlflow-model:latest
+          docker tag mlflow-model ${{ secrets.DOCKER_USERNAME }}/mlflow-model:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/mlflow-model:latest
