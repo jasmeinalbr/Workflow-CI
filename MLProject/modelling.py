@@ -47,56 +47,57 @@ import mlflow
 # Set experiment name dulu
 mlflow.set_experiment("Workflow_CI")
 
-with mlflow.start_run(run_name="all_models", nested=True):
-    # --- Run experiments ---
-    for model_name, (estimator, param_grid) in models.items():
-        grid = GridSearchCV(estimator, param_grid, cv=3, scoring="accuracy", n_jobs=-1)
-        grid.fit(X_train, y_train)
+with mlflow.start_run(run_name="parent_run"):
+    with mlflow.start_run(run_name="all_models", nested=True):
+        # --- Run experiments ---
+        for model_name, (estimator, param_grid) in models.items():
+            grid = GridSearchCV(estimator, param_grid, cv=3, scoring="accuracy", n_jobs=-1)
+            grid.fit(X_train, y_train)
 
-        best_model = grid.best_estimator_
-        y_pred = best_model.predict(X_test)
+            best_model = grid.best_estimator_
+            y_pred = best_model.predict(X_test)
 
-        # --- Metrics ---
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred, average="weighted")
-        rec = recall_score(y_test, y_pred, average="weighted")
-        f1 = f1_score(y_test, y_pred, average="weighted")
-        report = classification_report(y_test, y_pred)
+            # --- Metrics ---
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average="weighted")
+            rec = recall_score(y_test, y_pred, average="weighted")
+            f1 = f1_score(y_test, y_pred, average="weighted")
+            report = classification_report(y_test, y_pred)
 
-        # --- Log params & metrics ---
-        mlflow.log_param("model", model_name)
-        mlflow.log_params(grid.best_params_)
-        mlflow.log_metric("accuracy", acc)
-        mlflow.log_metric("precision", prec)
-        mlflow.log_metric("recall", rec)
-        mlflow.log_metric("f1_score", f1)
+            # --- Log params & metrics ---
+            mlflow.log_param("model", model_name)
+            mlflow.log_params(grid.best_params_)
+            mlflow.log_metric("accuracy", acc)
+            mlflow.log_metric("precision", prec)
+            mlflow.log_metric("recall", rec)
+            mlflow.log_metric("f1_score", f1)
 
-        # --- Confusion matrix ---
-        cm = confusion_matrix(y_test, y_pred)
-        plt.figure(figsize=(6, 4))
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-        plt.title(f"Confusion Matrix - {model_name}")
-        plt.xlabel("Predicted")
-        plt.ylabel("True")
+            # --- Confusion matrix ---
+            cm = confusion_matrix(y_test, y_pred)
+            plt.figure(figsize=(6, 4))
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+            plt.title(f"Confusion Matrix - {model_name}")
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
 
-        tmpdir = tempfile.mkdtemp()
-        cm_path = os.path.join(tmpdir, f"confusion_matrix_{model_name}.png")
-        plt.savefig(cm_path)
-        mlflow.log_artifact(cm_path, artifact_path="plots")
+            tmpdir = tempfile.mkdtemp()
+            cm_path = os.path.join(tmpdir, f"confusion_matrix_{model_name}.png")
+            plt.savefig(cm_path)
+            mlflow.log_artifact(cm_path, artifact_path="plots")
 
-        # --- Classification report ---
-        report_path = os.path.join(tmpdir, f"classification_report_{model_name}.txt")
-        with open(report_path, "w") as f:
-            f.write(report)
-        mlflow.log_artifact(report_path, artifact_path="reports")
+            # --- Classification report ---
+            report_path = os.path.join(tmpdir, f"classification_report_{model_name}.txt")
+            with open(report_path, "w") as f:
+                f.write(report)
+            mlflow.log_artifact(report_path, artifact_path="reports")
 
-        # --- Save best model ---
-        mlflow.sklearn.log_model(best_model, artifact_path=f"models/{model_name}")
+            # --- Save best model ---
+            mlflow.sklearn.log_model(best_model, artifact_path=f"models/{model_name}")
 
-        # --- Save grid search results ---
-        results_path = os.path.join(tmpdir, f"grid_results_{model_name}.json")
-        with open(results_path, "w") as f:
-            json.dump(grid.cv_results_, f, indent=4)
-        mlflow.log_artifact(results_path, artifact_path="grid_search")
+            # --- Save grid search results ---
+            results_path = os.path.join(tmpdir, f"grid_results_{model_name}.json")
+            with open(results_path, "w") as f:
+                json.dump(grid.cv_results_, f, indent=4)
+            mlflow.log_artifact(results_path, artifact_path="grid_search")
 
-        print(f"✅ {model_name} Best Accuracy: {acc:.4f}, Best Params: {grid.best_params_}")
+            print(f"✅ {model_name} Best Accuracy: {acc:.4f}, Best Params: {grid.best_params_}")
