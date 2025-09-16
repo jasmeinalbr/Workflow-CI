@@ -42,8 +42,14 @@ models = {
     )
 }
 
-# --- Run experiments ---
-for model_name, (estimator, param_grid) in models.items():
+import mlflow
+
+# Set experiment name dulu
+mlflow.set_experiment("Workflow_CI")
+
+with mlflow.start_run(run_name="all_models"):
+    # --- Run experiments ---
+    for model_name, (estimator, param_grid) in models.items():
         grid = GridSearchCV(estimator, param_grid, cv=3, scoring="accuracy", n_jobs=-1)
         grid.fit(X_train, y_train)
 
@@ -85,8 +91,7 @@ for model_name, (estimator, param_grid) in models.items():
         mlflow.log_artifact(report_path, artifact_path="reports")
 
         # --- Save best model ---
-        # Simpan model ke path standar biar gampang diambil CI/CD
-        mlflow.sklearn.log_model(best_model, artifact_path="model")
+        mlflow.sklearn.log_model(best_model, artifact_path=f"models/{model_name}")
 
         # --- Save grid search results ---
         results_path = os.path.join(tmpdir, f"grid_results_{model_name}.json")
