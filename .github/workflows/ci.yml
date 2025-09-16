@@ -31,7 +31,7 @@ jobs:
 
       - name: Run mlflow project
         shell: bash -l {0}
-        run: mlflow run MLProject -P data_path=MLProject/dataset_preprocessing
+        run: mlflow run MLProject -P data_path=dataset_preprocessing
 
       - name: Get latest MLflow run_id
         shell: bash -l {0}
