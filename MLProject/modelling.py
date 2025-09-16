@@ -42,15 +42,10 @@ models = {
     )
 }
 
-import mlflow
-
-# Set experiment name dulu
-mlflow.set_experiment("Workflow_CI")
-
-with mlflow.start_run(run_name="parent_run"):
-    with mlflow.start_run(run_name="all_models", nested=True):
-        # --- Run experiments ---
-        for model_name, (estimator, param_grid) in models.items():
+# with mlflow.start_run(run_name="parent_run"):
+#     with mlflow.start_run(run_name="all_models", nested=True):
+# --- Run experiments ---
+for model_name, (estimator, param_grid) in models.items():
             grid = GridSearchCV(estimator, param_grid, cv=3, scoring="accuracy", n_jobs=-1)
             grid.fit(X_train, y_train)
 
