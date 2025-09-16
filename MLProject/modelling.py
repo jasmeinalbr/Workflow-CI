@@ -26,9 +26,9 @@ X_test = pd.read_csv(f"{args.data_path}/test_processed.csv")
 y_train = pd.read_csv(f"{args.data_path}/y_train.csv").values.ravel()
 y_test = pd.read_csv(f"{args.data_path}/y_test.csv").values.ravel()
 
-# --- Set MLflow Tracking URI ---
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
-mlflow.set_experiment("Workflow_CI_Advanced")
+# --- Set local MLflow experiment ---
+mlflow.set_tracking_uri("file:./mlruns")
+mlflow.set_experiment("Workflow_CI")
 
 # --- Candidate models + hyperparameter grids ---
 models = {
@@ -68,7 +68,7 @@ for model_name, (estimator, param_grid) in models.items():
 
         # --- Confusion matrix ---
         cm = confusion_matrix(y_test, y_pred)
-        plt.figure(figsize=(6,4))
+        plt.figure(figsize=(6, 4))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
         plt.title(f"Confusion Matrix - {model_name}")
         plt.xlabel("Predicted")
@@ -86,7 +86,8 @@ for model_name, (estimator, param_grid) in models.items():
         mlflow.log_artifact(report_path, artifact_path="reports")
 
         # --- Save best model ---
-        mlflow.sklearn.log_model(best_model, f"{model_name}_best")
+        # Simpan model ke path standar biar gampang diambil CI/CD
+        mlflow.sklearn.log_model(best_model, artifact_path="model")
 
         # --- Save grid search results ---
         results_path = os.path.join(tmpdir, f"grid_results_{model_name}.json")
