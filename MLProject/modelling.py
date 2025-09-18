@@ -95,5 +95,4 @@ for model_name, (estimator, param_grid) in models.items():
             json.dump(cv_results_serializable, f, indent=4)
         mlflow.log_artifact(results_path, artifact_path="grid_search")
 
-
         print(f"✅ {model_name} Best Accuracy: {acc:.4f}, Best Params: {grid.best_params_}")
