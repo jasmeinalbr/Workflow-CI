@@ -1,0 +1,10 @@
+artifact_location: file:///Users/jasmein/Bootcamp/DBS%20Foundation%202025/Kumpulan%20Submission/Submission%20Membangun%20Sistem%20ML/Workflow-CI/MLProject/mlruns/0/models/m-5c1438150e704d7a9dc28025e1e45454/artifacts
+creation_timestamp: 1758184937986
+experiment_id: '0'
+last_updated_timestamp: 1758184943115
+model_id: m-5c1438150e704d7a9dc28025e1e45454
+model_type: null
+name: model
+source_run_id: 384ec318cd484b4c92c7e50381b77ed0
+status: 2
+status_message: null

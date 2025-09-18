@@ -1,4 +1,4 @@
-name: workflow-ci-env
+$name: workflow-ci-env
 dependencies:
   - python=3.12.7
   - scikit-learn

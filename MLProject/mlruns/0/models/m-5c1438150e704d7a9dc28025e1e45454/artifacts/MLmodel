@@ -1,0 +1,22 @@
+artifact_path: file:///Users/jasmein/Bootcamp/DBS%20Foundation%202025/Kumpulan%20Submission/Submission%20Membangun%20Sistem%20ML/Workflow-CI/MLProject/mlruns/0/models/m-5c1438150e704d7a9dc28025e1e45454/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.4
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.5.2
+mlflow_version: 3.3.2
+model_id: m-5c1438150e704d7a9dc28025e1e45454
+model_size_bytes: 1079
+model_uuid: m-5c1438150e704d7a9dc28025e1e45454
+prompts: null
+run_id: 384ec318cd484b4c92c7e50381b77ed0
+utc_time_created: '2025-09-18 08:42:18.017521'
